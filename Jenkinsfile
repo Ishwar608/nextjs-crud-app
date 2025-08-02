@@ -22,7 +22,7 @@ pipeline {
       steps {
         sh 'npm run lint'
         // Add test command if you have tests
-        // sh 'npm run test'
+        // sh 'npm run test'  
       }
     }
 
