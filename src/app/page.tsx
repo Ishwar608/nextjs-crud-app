@@ -4,6 +4,7 @@ import { useStore } from "@/store";
 import { useState } from "react";
 
 export default function Home() {
+  // Local state for the input field
   const [name, setName] = useState("");
   const { users, addUser, deleteUser } = useStore();
 
