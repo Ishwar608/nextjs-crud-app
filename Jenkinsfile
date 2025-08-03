@@ -1,44 +1,51 @@
 pipeline {
-  agent any
+    agent any
 
-  tools {
-    nodejs 'Node 22'  // Match your Jenkins NodeJS version name
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        git 'https://github.com/Ishwar608/nextjs-crud-app.git'
-      }
+    environment {
+        CI = 'false'
+    }
+    
+    tools {
+        nodejs 'Node 22'  // Updated to use Node.js 22
     }
 
-    stage('Install Dependencies') {
-      steps {
-        sh 'npm install'
-      }
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git url: 'https://github.com/Ishwar608/nextjs-crud-app.git', branch: 'master'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Build React App') {
+            steps {
+                bat 'npm run build'
+            }
+        }
+
+        stage('Deploy to Vercel') {
+            steps {
+                withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
+                    bat '''
+                        npm install -g vercel
+                        vercel --token=%VERCEL_TOKEN% --prod --confirm
+                    '''
+                }
+            }
+        }
     }
 
-    stage('Lint & Test') {
-      steps {
-        sh 'npm run lint'
-        // Add test command if you have tests
-        // sh 'npm run test'  
-      }
+    post {
+        success {
+            echo "✅ React app deployed to Vercel!"
+        }
+        failure {
+            echo "❌ Deployment failed."
+        }
     }
-
-    stage('Build') {
-      steps {
-        sh 'npm run build'
-      }
-    }
-
-    stage('Deploy to Vercel') {
-      environment {
-        VERCEL_TOKEN = credentials('vercel-token')  // Jenkins secret
-      }
-      steps {
-        sh 'npx vercel --prod --token=$VERCEL_TOKEN'
-      }
-    }
-  }
 }
